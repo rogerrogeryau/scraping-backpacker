@@ -8,7 +8,7 @@ class BackSpiderSpider(scrapy.Spider):
     start_urls = ['https://www.backpackers.com.tw/forum/forumdisplay.php?f=25']
     count = 0
     def parse(self, response):
-	    while count<3
+	    while count<3:
 	    	form  = response.xpath('//tbody[starts-with(@id,"threadbits")]') 
 	    	trs = form.xpath('.//tr')
 
