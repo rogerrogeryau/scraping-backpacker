@@ -2,7 +2,7 @@
 import scrapy
 from scrapy.http import Request, FormRequest
 from backpacker.items import BackpackerItem
-
+import time
 class BackSpiderSpider(scrapy.Spider):
     name = 'back-spider'
     allowed_domains = ['backpackers.com.tw']
@@ -57,10 +57,10 @@ class BackSpiderSpider(scrapy.Spider):
     #post content crawling
     def parse_thread_content (self, response):
 
-        #scrap post title only when it is in page 1 of the post 
+        # # scrap post title only when it is in page 1 of the post
         if response.xpath('//a[@rel="prev"]//text()').extract_first() is None:
             post_title = response.xpath('//h1//text()').extract_first().strip()
-            print('post_title', post_title)
+            yield{'post_title': post_title}
 
         posts = response.xpath('//div[starts-with(@id,"post_message")]')
 
@@ -68,16 +68,22 @@ class BackSpiderSpider(scrapy.Spider):
             content = post.xpath('.//text()').extract()
             #strip '/n' and '/t' off from text in a list
             content = list(map(lambda s: s.strip(),content))   
-            # post_reply.append(content)
-            #print (content)
-            print('content',content)
+            yield{'content':content}
 
-        next_btn_in_content_page = response.xpath('//a[@rel="next"]/@href').extract_first()
-        abs_next_btn_url_in_content_page = response.urljoin(next_btn_in_content_page)
 
-        yield Request(url = abs_next_btn_url_in_content_page, callback= self.parse_thread_content)
+        #click next page
+        if response.xpath('//a[@rel="next"]/@href').extract_first() is not None:
+            next_btn_in_content_page = response.xpath('//a[@rel="next"]/@href').extract_first()
+            abs_next_btn_url_in_content_page = response.urljoin(next_btn_in_content_page)
 
-            
+            yield Request(url = abs_next_btn_url_in_content_page, callback= self.parse_thread_content)
+        # else:
+        #     post_title = response.xpath('//h1//text()').extract_first().strip()
+        #     yield{
+        #         'post_title':post_title
+        #         'content':post_list
+        #     }
+
 
 
 
